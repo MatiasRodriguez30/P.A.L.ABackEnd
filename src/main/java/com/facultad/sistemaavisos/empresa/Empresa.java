@@ -3,7 +3,7 @@ package com.facultad.sistemaavisos.empresa;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "empresas")
@@ -29,10 +29,10 @@ public class Empresa {
     private String direccionEmpresa;
 
     @Column(name = "fecha_alta_empresa")
-    private LocalDateTime fechaAltaEmpresa;
+    private Instant fechaAltaEmpresa;
 
     @Column(name = "fecha_baja_empresa")
-    private LocalDateTime fechaBajaEmpresa;
+    private Instant fechaBajaEmpresa;
 
     @Column(name = "mail_empresa", nullable = false, unique = true)
     private String mailEmpresa;

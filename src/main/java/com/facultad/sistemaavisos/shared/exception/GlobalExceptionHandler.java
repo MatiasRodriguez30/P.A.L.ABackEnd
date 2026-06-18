@@ -7,7 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -17,7 +17,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> manejarRecursoNoEncontrado(RecursoNoEncontradoException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 new ErrorResponse(
-                        LocalDateTime.now(),
+                        Instant.now(),
                         HttpStatus.NOT_FOUND.value(),
                         "Recurso no encontrado",
                         ex.getMessage()
@@ -29,7 +29,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> manejarDomainException(DomainException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(
                 new ErrorResponse(
-                        LocalDateTime.now(),
+                        Instant.now(),
                         HttpStatus.CONFLICT.value(),
                         "Conflicto de negocio",
                         ex.getMessage()
@@ -46,7 +46,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest().body(
                 new ErrorResponse(
-                        LocalDateTime.now(),
+                        Instant.now(),
                         HttpStatus.BAD_REQUEST.value(),
                         "Validacion incorrecta",
                         mensaje

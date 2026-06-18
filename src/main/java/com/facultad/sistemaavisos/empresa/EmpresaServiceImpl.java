@@ -4,7 +4,7 @@ import com.facultad.sistemaavisos.shared.exception.RecursoNoEncontradoException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -29,7 +29,7 @@ public class EmpresaServiceImpl implements EmpresaService {
     @Override
     public Empresa crear(Empresa empresa) {
         if (empresa.getFechaAltaEmpresa() == null) {
-            empresa.setFechaAltaEmpresa(LocalDateTime.now());
+            empresa.setFechaAltaEmpresa(Instant.now());
         }
 
         return empresaRepository.save(empresa);
@@ -43,8 +43,8 @@ public class EmpresaServiceImpl implements EmpresaService {
         empresaExistente.setDireccionEmpresa(empresa.getDireccionEmpresa());
         empresaExistente.setFechaBajaEmpresa(empresa.getFechaBajaEmpresa());
         empresaExistente.setMailEmpresa(empresa.getMailEmpresa());
-        empresaExistente.setNombreEmpresa(empresa.getNombreEmpresa());
-        empresaExistente.setNroEmpresa(empresa.getNroEmpresa());
+        empresaExistente.setRazonSocialEmpresa(empresa.getRazonSocialEmpresa());
+        empresaExistente.setTelefonoEmpresa(empresa.getTelefonoEmpresa());
 
         return empresaRepository.save(empresaExistente);
     }

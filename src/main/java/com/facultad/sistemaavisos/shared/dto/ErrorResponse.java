@@ -1,9 +1,9 @@
 package com.facultad.sistemaavisos.shared.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record ErrorResponse(
-        LocalDateTime fechaHora,
+        Instant fechaHora,
         int estado,
         String error,
         String mensaje
