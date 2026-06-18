@@ -6,11 +6,11 @@ public interface PostulanteService {
 
     List<Postulante> listarTodos();
 
-    Postulante buscarPorId(Integer legajoAcademicoPostulante);
+    Postulante buscarPorId(Long postulanteId);
 
     Postulante guardar(Postulante postulante);
 
-    Postulante actualizar(Integer legajoAcademicoPostulante, Postulante postulante);
+    Postulante actualizar(Long postulanteId, Postulante postulante);
 
-    void eliminar(Integer legajoAcademicoPostulante);
+    void eliminar(Long postulanteId);
 }

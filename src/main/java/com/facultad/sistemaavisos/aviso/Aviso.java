@@ -1,11 +1,13 @@
 package com.facultad.sistemaavisos.aviso;
 
+import com.facultad.sistemaavisos.aviso.dto.request.AvisoUpdateRequest;
 import com.facultad.sistemaavisos.avisoestado.AvisoEstado;
 import com.facultad.sistemaavisos.avisocarrera.AvisoCarrera;
 import com.facultad.sistemaavisos.avisotipoaviso.AvisoTipoAviso;
 import com.facultad.sistemaavisos.empresa.Empresa;
 import com.facultad.sistemaavisos.estadoaviso.EstadoAviso;
 import com.facultad.sistemaavisos.reclutador.Reclutador;
+import com.facultad.sistemaavisos.shared.exception.EntidadDadaDeBajaException;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -82,4 +84,27 @@ public class Aviso {
     @Builder.Default
     @OneToMany(mappedBy = "aviso", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AvisoCarrera> avisosCarrera = new ArrayList<>();
+
+    public void actualizarDatos(AvisoUpdateRequest dto, Empresa empresa, Reclutador reclutador, EstadoAviso estadoActual) {
+        this.descripcionAviso = dto.descripcionAviso();
+        this.fechaCierreAviso = dto.fechaCierreAviso();
+        this.fechaPublicacionAviso = dto.fechaPublicacionAviso();
+        this.imagenUrlAviso = dto.imagenUrlAviso();
+        this.nombreAviso = dto.nombreAviso();
+        this.empresa = empresa;
+        this.reclutador = reclutador;
+        this.estadoActual = estadoActual;
+    }
+
+    public boolean estaDadoDeBaja() {
+        return fechaBajaAviso != null;
+    }
+
+    public void darDeBaja() {
+        if (estaDadoDeBaja()) {
+            throw new EntidadDadaDeBajaException("Aviso", id);
+        }
+
+        this.fechaBajaAviso = Instant.now();
+    }
 }

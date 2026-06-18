@@ -20,7 +20,7 @@ public class EmpresaServiceImpl implements EmpresaService {
 
     @Override
     public Empresa buscarPorCuit(String cuitEmpresa) {
-        return empresaRepository.findById(cuitEmpresa)
+        return empresaRepository.findByCuitEmpresa(cuitEmpresa)
                 .orElseThrow(() -> new RecursoNoEncontradoException(
                         "No se encontro la empresa con CUIT: " + cuitEmpresa
                 ));

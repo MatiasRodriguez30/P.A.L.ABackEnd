@@ -5,14 +5,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface PostulacionRepository extends JpaRepository<Postulacion, Integer> {
+public interface PostulacionRepository extends JpaRepository<Postulacion, Long> {
 
-    List<Postulacion> findByPostulante_LegajoAcademicoPostulante(Integer legajoAcademicoPostulante);
+    List<Postulacion> findByPostulante_Id(Long postulanteId);
 
-    List<Postulacion> findByAviso_NroAviso(Integer nroAviso);
+    List<Postulacion> findByAviso_Id(Long avisoId);
 
-    Optional<Postulacion> findByPostulante_LegajoAcademicoPostulanteAndAviso_NroAviso(
-            Integer legajoAcademicoPostulante,
-            Integer nroAviso
+    Optional<Postulacion> findByPostulante_IdAndAviso_Id(
+            Long postulanteId,
+            Long avisoId
     );
 }

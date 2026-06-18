@@ -2,5 +2,9 @@ package com.facultad.sistemaavisos.empresa;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface EmpresaRepository extends JpaRepository<Empresa, String> {
+import java.util.Optional;
+
+public interface EmpresaRepository extends JpaRepository<Empresa, Long> {
+
+    Optional<Empresa> findByCuitEmpresa(String cuitEmpresa);
 }

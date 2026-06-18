@@ -2,5 +2,11 @@ package com.facultad.sistemaavisos.reclutador;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ReclutadorRepository extends JpaRepository<Reclutador, String> {
+import java.util.Optional;
+
+public interface ReclutadorRepository extends JpaRepository<Reclutador, Long> {
+
+    Optional<Reclutador> findByCuilReclutador(String cuilReclutador);
+
+    Optional<Reclutador> findByIdAndFechaBajaReclutadorIsNull(Long id);
 }

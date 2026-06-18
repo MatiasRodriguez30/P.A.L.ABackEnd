@@ -6,11 +6,11 @@ public interface PostulacionService {
 
     List<Postulacion> listarTodos();
 
-    Postulacion buscarPorId(Integer nroPostulacion);
+    Postulacion buscarPorId(Long postulacionId);
 
     Postulacion guardar(Postulacion postulacion);
 
-    Postulacion actualizar(Integer nroPostulacion, Postulacion postulacion);
+    Postulacion actualizar(Long postulacionId, Postulacion postulacion);
 
-    void eliminar(Integer nroPostulacion);
+    void eliminar(Long postulacionId);
 }

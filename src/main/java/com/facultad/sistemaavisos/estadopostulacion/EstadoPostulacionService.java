@@ -6,11 +6,11 @@ public interface EstadoPostulacionService {
 
     List<EstadoPostulacion> listarTodos();
 
-    EstadoPostulacion buscarPorId(Integer codEstadoPostulacion);
+    EstadoPostulacion buscarPorId(Long estadoPostulacionId);
 
     EstadoPostulacion guardar(EstadoPostulacion estadoPostulacion);
 
-    EstadoPostulacion actualizar(Integer codEstadoPostulacion, EstadoPostulacion estadoPostulacion);
+    EstadoPostulacion actualizar(Long estadoPostulacionId, EstadoPostulacion estadoPostulacion);
 
-    void eliminar(Integer codEstadoPostulacion);
+    void eliminar(Long estadoPostulacionId);
 }

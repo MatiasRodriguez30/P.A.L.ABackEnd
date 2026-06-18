@@ -46,7 +46,7 @@ public class Postulacion {
     private String urlCVPostulacion;
 
     @ManyToOne
-    @JoinColumn(name = "legajo_academico_postulante", nullable = false)
+    @JoinColumn(name = "nro_postulante", nullable = false)
     private Postulante postulante;
 
     @ManyToOne

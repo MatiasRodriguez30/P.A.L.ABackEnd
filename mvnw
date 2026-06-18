@@ -32,6 +32,17 @@
 set -euf
 [ "${MVNW_VERBOSE-}" != debug ] || set -x
 
+LOCAL_JDK_HOME="$(
+  cd "$(dirname "$0")" || exit 1
+  pwd
+)/.tools/jdk-21"
+if [ -z "${JAVA_HOME-}" ] && [ -x "$LOCAL_JDK_HOME/bin/java" ] && [ -x "$LOCAL_JDK_HOME/bin/javac" ]; then
+  JAVA_HOME="$LOCAL_JDK_HOME"
+  export JAVA_HOME
+  PATH="$LOCAL_JDK_HOME/bin:$PATH"
+  export PATH
+fi
+
 # OS specific support.
 native_path() { printf %s\\n "$1"; }
 case "$(uname)" in
@@ -142,7 +153,7 @@ esac
 distributionUrlName="${distributionUrl##*/}"
 distributionUrlNameMain="${distributionUrlName%.*}"
 distributionUrlNameMain="${distributionUrlNameMain%-bin}"
-MAVEN_USER_HOME="${MAVEN_USER_HOME:-${HOME}/.m2}"
+MAVEN_USER_HOME="${MAVEN_USER_HOME:-${scriptDir}/.mvn/.m2}"
 MAVEN_HOME="${MAVEN_USER_HOME}/wrapper/dists/${distributionUrlNameMain-}/$(hash_string "$distributionUrl")"
 
 exec_maven() {

@@ -6,11 +6,11 @@ public interface EstadoAvisoService {
 
     List<EstadoAviso> listarTodos();
 
-    EstadoAviso buscarPorId(Integer codEstadoAviso);
+    EstadoAviso buscarPorId(Long estadoAvisoId);
 
     EstadoAviso guardar(EstadoAviso estadoAviso);
 
-    EstadoAviso actualizar(Integer codEstadoAviso, EstadoAviso estadoAviso);
+    EstadoAviso actualizar(Long estadoAvisoId, EstadoAviso estadoAviso);
 
-    void eliminar(Integer codEstadoAviso);
+    void eliminar(Long estadoAvisoId);
 }

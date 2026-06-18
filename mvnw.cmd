@@ -27,6 +27,13 @@
 @REM   MVNW_VERBOSE - true: enable verbose log; others: silence the output
 @REM ----------------------------------------------------------------------------
 
+@IF "%JAVA_HOME%"=="" (
+  IF EXIST "%~dp0.tools\jdk-21\bin\java.exe" (
+    SET "JAVA_HOME=%~dp0.tools\jdk-21"
+    SET "PATH=%~dp0tools\jdk-21\bin;%PATH%"
+  )
+)
+
 @IF "%__MVNW_ARG0_NAME__%"=="" (SET __MVNW_ARG0_NAME__=%~nx0)
 @SET __MVNW_CMD__=
 @SET __MVNW_ERROR__=
@@ -48,6 +55,12 @@
 $ErrorActionPreference = "Stop"
 if ($env:MVNW_VERBOSE -eq "true") {
   $VerbosePreference = "Continue"
+}
+
+$LOCAL_JDK_HOME = "$scriptDir/.tools/jdk-21"
+if (-not $env:JAVA_HOME -and (Test-Path -Path "$LOCAL_JDK_HOME/bin/java.exe" -PathType Leaf)) {
+  $env:JAVA_HOME = $LOCAL_JDK_HOME
+  $env:Path = "$LOCAL_JDK_HOME/bin;$env:Path"
 }
 
 # calculate distributionUrl, requires .mvn/wrapper/maven-wrapper.properties
@@ -79,7 +92,7 @@ if ($env:MVNW_REPOURL) {
 $distributionUrlName = $distributionUrl -replace '^.*/',''
 $distributionUrlNameMain = $distributionUrlName -replace '\.[^.]*$','' -replace '-bin$',''
 
-$MAVEN_M2_PATH = "$HOME/.m2"
+$MAVEN_M2_PATH = "$scriptDir/.mvn/.m2"
 if ($env:MAVEN_USER_HOME) {
   $MAVEN_M2_PATH = "$env:MAVEN_USER_HOME"
 }
@@ -89,10 +102,12 @@ if (-not (Test-Path -Path $MAVEN_M2_PATH)) {
 }
 
 $MAVEN_WRAPPER_DISTS = $null
-if ((Get-Item $MAVEN_M2_PATH).Target[0] -eq $null) {
+$mavenUserHomeItem = Get-Item $MAVEN_M2_PATH
+$mavenUserHomeTarget = $mavenUserHomeItem.Target
+if ($null -eq $mavenUserHomeTarget -or $mavenUserHomeTarget.Count -eq 0 -or $null -eq $mavenUserHomeTarget[0]) {
   $MAVEN_WRAPPER_DISTS = "$MAVEN_M2_PATH/wrapper/dists"
 } else {
-  $MAVEN_WRAPPER_DISTS = (Get-Item $MAVEN_M2_PATH).Target[0] + "/wrapper/dists"
+  $MAVEN_WRAPPER_DISTS = $mavenUserHomeTarget[0] + "/wrapper/dists"
 }
 
 $MAVEN_HOME_PARENT = "$MAVEN_WRAPPER_DISTS/$distributionUrlNameMain"

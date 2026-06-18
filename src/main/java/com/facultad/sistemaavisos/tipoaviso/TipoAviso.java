@@ -7,6 +7,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -46,6 +47,7 @@ public class TipoAviso {
     private String nombreTipoAviso;
 
     @Builder.Default
-    @OneToMany(mappedBy = "tipoAviso", fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cod_tipo_aviso", nullable = false)
     private List<SubTipoAviso> subTipoAvisos = new ArrayList<>();
 }

@@ -1,0 +1,11 @@
+delete from avisos_tipos_avisos_subtipos_avisos;
+delete from avisos_tipos_avisos;
+delete from avisos_carreras;
+delete from avisos_estados;
+delete from avisos;
+delete from reclutadores_empresas;
+delete from subtipos_aviso;
+delete from tipos_aviso;
+delete from carreras;
+delete from empresas;
+delete from reclutadores;

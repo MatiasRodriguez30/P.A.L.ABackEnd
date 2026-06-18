@@ -6,11 +6,11 @@ public interface CarreraService {
 
     List<Carrera> listarTodos();
 
-    Carrera buscarPorId(Integer codCarrera);
+    Carrera buscarPorId(Long carreraId);
 
     Carrera guardar(Carrera carrera);
 
-    Carrera actualizar(Integer codCarrera, Carrera carrera);
+    Carrera actualizar(Long carreraId, Carrera carrera);
 
-    void eliminar(Integer codCarrera);
+    void eliminar(Long carreraId);
 }
