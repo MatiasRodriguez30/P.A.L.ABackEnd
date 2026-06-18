@@ -25,27 +25,23 @@ El proyecto está basado en un modelo de dominio donde las empresas publican avi
 
 ```text
 src/main/java/com/facultad/sistemaavisos
-├── controller
-├── dto
-├── entity
-├── exception
-├── mapper
-├── repository
-├── service
-│   └── impl
+├── aviso
+├── carrera
+├── empresa
+├── estadoaviso
+├── estadopostulacion
+├── postulante
+├── postulacion
+├── reclutador
+├── shared
 └── SistemaAvisosApplication.java
 ```
 
 ### Paquetes principales
 
-- `entity`: contiene las entidades JPA del sistema.
-- `repository`: contiene las interfaces que acceden a la base de datos.
-- `service`: contiene las interfaces de lógica de negocio.
-- `service.impl`: contiene las implementaciones de los servicios.
-- `controller`: contiene los endpoints REST.
-- `exception`: contiene las excepciones personalizadas y el manejador global de errores.
-- `dto`: reservado para objetos de transferencia de datos.
-- `mapper`: reservado para transformar entidades en DTOs y viceversa.
+- `empresa`, `reclutador`, `postulante`, `carrera`, `aviso`, `postulacion`, `estadoaviso`, `estadopostulacion`: cada modulo contiene su entidad, repository y service.
+- `shared.exception`: excepciones globales y handler comun.
+- `shared.dto`: objetos de respuesta compartidos.
 
 ---
 
@@ -311,24 +307,26 @@ Algunas reglas que se espera incorporar en próximas etapas:
 
 ## Estado actual del desarrollo
 
-El proyecto se encuentra en una etapa inicial.
+El proyecto se encuentra en una etapa inicial y la estructura ya fue separada por modulo.
 
 Ya se configuraron:
 
 - Proyecto Spring Boot base.
+- Estructura por modulo.
 - Entidades principales.
-- Repositories.
+- Repositories por modulo.
 - Manejo global de errores.
 - Service inicial de empresa.
 - Controller inicial de empresa.
+- Contratos de servicio para los modulos restantes.
 
 Pendiente de implementar:
 
-- Services y controllers de reclutador.
-- Services y controllers de postulante.
-- Services y controllers de carrera.
-- Services y controllers de aviso.
-- Services y controllers de postulación.
+- Controllers y services reales para reclutador.
+- Controllers y services reales para postulante.
+- Controllers y services reales para carrera.
+- Controllers y services reales para aviso.
+- Controllers y services reales para postulación.
 - DTOs.
 - Mappers.
 - Validaciones.
