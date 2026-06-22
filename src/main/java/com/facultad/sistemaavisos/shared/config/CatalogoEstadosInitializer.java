@@ -6,6 +6,8 @@ import com.facultad.sistemaavisos.estadopostulacion.EstadoPostulacion;
 import com.facultad.sistemaavisos.estadopostulacion.EstadoPostulacionRepository;
 import com.facultad.sistemaavisos.estadosolicitud.EstadoSolicitud;
 import com.facultad.sistemaavisos.estadosolicitud.EstadoSolicitudRepository;
+import com.facultad.sistemaavisos.tipoestudiante.TipoEstudiante;
+import com.facultad.sistemaavisos.tipoestudiante.TipoEstudianteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +23,7 @@ public class CatalogoEstadosInitializer {
     private final EstadoAvisoRepository estadoAvisoRepository;
     private final EstadoPostulacionRepository estadoPostulacionRepository;
     private final EstadoSolicitudRepository estadoSolicitudRepository;
+    private final TipoEstudianteRepository tipoEstudianteRepository;
 
     @Bean
     ApplicationRunner seedEstados() {
@@ -28,6 +31,7 @@ public class CatalogoEstadosInitializer {
             seedEstadosAviso();
             seedEstadosPostulacion();
             seedEstadosSolicitud();
+            seedTiposEstudiante();
         };
     }
 
@@ -86,6 +90,17 @@ public class CatalogoEstadosInitializer {
                                 .fechaAltaEstadoSolicitud(Instant.now())
                                 .build()
                 )));
+    }
+
+    private void seedTiposEstudiante() {
+        tipoEstudianteRepository
+                .findByNombreTipoEstudianteIgnoreCaseAndFechaBajaTipoEstudianteIsNull("Estudiante")
+                .orElseGet(() -> tipoEstudianteRepository.save(
+                        TipoEstudiante.builder()
+                                .nombreTipoEstudiante("Estudiante")
+                                .fechaAltaTipoEstudiante(Instant.now())
+                                .build()
+                ));
     }
 
     private record EstadoSeed(String codigoInterno, String nombreVisible) {

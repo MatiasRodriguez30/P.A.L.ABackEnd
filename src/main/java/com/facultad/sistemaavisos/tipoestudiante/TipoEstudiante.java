@@ -33,5 +33,6 @@ public class TipoEstudiante {
 
     @Column(name = "fecha_baja_tipo_estudiante")
     private Instant fechaBajaTipoEstudiante;
+    private String nombreTipoEstudiante;
 
 }

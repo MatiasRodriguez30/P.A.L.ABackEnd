@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,15 +44,15 @@ public class Postulante {
     private Instant fechaBajaPostulante;
 
     @Column(name = "fecha_nacimiento_postulante")
-    private Instant fechaNacimientoPostulante;
+    private LocalDate fechaNacimientoPostulante;
 
     @Column(name = "legajo_academico_postulante", nullable = false, unique = true)
     private Long legajoAcademicoPostulante;
 
-    @Column(name = "mail_academico_postulante", nullable = false, unique = true)
+    @Column(name = "mail_academico_postulante", unique = true)
     private String mailAcademicoPostulante;
 
-    @Column(name = "mail_personal_postulante")
+    @Column(name = "mail_personal_postulante", nullable = false)
     private String mailPersonalPostulante;
 
     @Column(name = "url_cv_guardado")

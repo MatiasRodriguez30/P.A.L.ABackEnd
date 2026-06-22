@@ -26,7 +26,9 @@ Dejar asentados los permisos funcionales de PALA para luego:
 - `VER_DETALLE_AVISO`
   - Permite consultar el detalle de un aviso.
 - `CONSULTAR_SOPORTE_AVISO`
-  - Permite consultar empresas activas, carreras activas, tipos y subtipos para armar avisos.
+  - Permite consultar los datos auxiliares necesarios para armar el formulario de aviso.
+  - Cubre empresas activas del reclutador, carreras activas, tipos de aviso activos y subtipos asociados.
+  - En front sirve para cargar combos, selects y opciones del alta o edicion de aviso.
 - `CREAR_AVISO`
   - Permite crear avisos.
 - `EDITAR_AVISO`
@@ -97,61 +99,38 @@ Dejar asentados los permisos funcionales de PALA para luego:
 - `VISUALIZAR_REPORTES`
   - Permite acceder a reportes funcionales del sistema.
 
-## Matriz rol -> permisos
+## Matriz rol -> permisos vigente para este flujo
 
 ### POSTULANTE
 
 - `VER_AVISOS`
-- `VER_DETALLE_AVISO`
-- `POSTULARSE_AVISO`
-- `SUBIR_CV_POSTULACION`
-- `CONSULTAR_POSTULACIONES_PROPIAS`
-- `CANCELAR_POSTULACION_PROPIA`
-- `GESTIONAR_PERFIL_POSTULANTE`
-- `GESTIONAR_CV`
 
 ### RECLUTADOR
 
-- `CONSULTAR_SOPORTE_AVISO`
 - `CREAR_AVISO`
 - `EDITAR_AVISO`
 - `PUBLICAR_AVISO`
+- `CONSULTAR_SOPORTE_AVISO`
 - `PAUSAR_AVISO`
 - `REANUDAR_AVISO`
 - `CANCELAR_AVISO`
-- `CONSULTAR_AVISOS_PROPIOS`
-- `CONSULTAR_POSTULACIONES_RECIBIDAS`
-- `RESOLVER_POSTULACION`
-
-### ADMINISTRADOR
-
-- `ABM_TIPO_AVISO`
-- `ABM_SUBTIPO_AVISO`
-- `ABM_ESTADO_AVISO`
-- `ABM_ESTADO_POSTULACION`
-- `ABM_ESTADO_SOLICITUD`
-- `ABM_CARRERA`
-- `ABM_TIPO_ESTUDIANTE`
-- `ABM_EMPRESA`
-- `GESTIONAR_SOLICITUD_RECLUTADOR`
-- `GESTIONAR_CONEXIONES_EMPRESA_RECLUTADOR`
-- `GESTIONAR_SOLICITUD_ASOCIACION`
-- `VISUALIZAR_REPORTES`
 
 ## Notas de implementacion
 
-- Para `AvisoController`, hoy la autorizacion esta basada en rol y actor autenticado. Cuando pasemos a permisos, los endpoints deberian pedir permisos concretos como:
-  - `VER_AVISOS`
-  - `VER_DETALLE_AVISO`
-- Para `AvisoReclutadorController`, los endpoints deberian migrar a permisos como:
+- `AvisoController` ya usa `hasAuthority('VER_AVISOS')` para listado y detalle.
+- `AvisoReclutadorController` ya usa permisos separados para:
   - `CREAR_AVISO`
   - `EDITAR_AVISO`
+  - `PUBLICAR_AVISO`
   - `PAUSAR_AVISO`
   - `REANUDAR_AVISO`
   - `CANCELAR_AVISO`
+- En `crear` y `editar`, si `guardarComoBorrador = false`, ademas se exige `PUBLICAR_AVISO`.
 - Para `AvisoSoporteController`, deberian usarse:
   - `CONSULTAR_SOPORTE_AVISO`
   - o permisos de administracion de catalogos segun el caso
+- `CONSULTAR_SOPORTE_AVISO` existe para evitar mezclar permisos de consulta auxiliar con permisos operativos sobre el aviso.
+- La idea es que el usuario pueda abrir el formulario y cargar sus opciones disponibles aunque todavia no tenga permisos para publicar o controlar estados.
 
 ## Recomendacion para el subsistema
 

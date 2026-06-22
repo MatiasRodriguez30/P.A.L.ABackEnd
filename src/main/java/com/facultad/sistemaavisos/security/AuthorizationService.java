@@ -3,6 +3,7 @@ package com.facultad.sistemaavisos.security;
 import com.facultad.sistemaavisos.postulante.PostulanteRepository;
 import com.facultad.sistemaavisos.reclutador.ReclutadorRepository;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +45,21 @@ public class AuthorizationService {
                                         mailAutenticado.equalsIgnoreCase(postulante.getMailPersonalPostulante()))
                 )
                 .orElse(false);
+    }
+
+    public boolean puedePublicarSegunModo(Boolean guardarComoBorrador) {
+        if (Boolean.TRUE.equals(guardarComoBorrador)) {
+            return true;
+        }
+
+        final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            return false;
+        }
+
+        return authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch("PUBLICAR_AVISO"::equals);
     }
 
     private String obtenerMailAutenticado() {

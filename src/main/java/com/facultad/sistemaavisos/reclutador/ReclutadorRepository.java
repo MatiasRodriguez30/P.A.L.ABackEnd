@@ -10,7 +10,7 @@ public interface ReclutadorRepository extends JpaRepository<Reclutador, Long> {
 
     Optional<Reclutador> findByIdAndFechaBajaReclutadorIsNull(Long id);
 
-    Optional<Reclutador> findByMailReclutadorAndFechaBajaReclutadorIsNull(String mailReclutador);
+    Optional<Reclutador> findByMailReclutadorIgnoreCaseAndFechaBajaReclutadorIsNull(String mailReclutador);
 
     Optional<Reclutador> findByUsuarioSeguridadId(Long usuarioSeguridadId);
 }

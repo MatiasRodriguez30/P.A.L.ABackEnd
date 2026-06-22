@@ -17,10 +17,10 @@ import com.facultad.sistemaavisos.shared.exception.OperacionInvalidaException;
 import com.facultad.sistemaavisos.tipoestudiante.TipoEstudiante;
 import com.facultad.sistemaavisos.tipoestudiante.TipoEstudianteRepository;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 import java.time.Instant;
 import java.util.List;
@@ -58,26 +58,31 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse login(AuthLoginRequest request) {
-        final SecuritySubsystemLoginResponse response = invocarSubsistema("/api/auth/external/login", request);
+        final AuthLoginRequest requestNormalizado = new AuthLoginRequest(
+                normalizarMail(request.mailUsuario()),
+                request.passwordUsuario()
+        );
+        final SecuritySubsystemLoginResponse response = invocarSubsistema("/api/auth/external/login", requestNormalizado);
         sincronizarActorLocalPostLogin(response);
         return mapResponse(response);
     }
 
     @Override
     public AuthResponse register(AuthRegisterRequest request) {
-        validarRegistro(request);
+        final AuthRegisterRequest requestNormalizado = normalizarRegistro(request);
+        validarRegistro(requestNormalizado);
 
         final SecuritySubsystemLoginResponse response = invocarSubsistema(
                 "/api/auth/external/register",
                 new SecuritySubsystemExternalRegisterRequest(
-                        request.mailUsuario(),
-                        request.passwordUsuario(),
-                        request.rolSolicitado().getClave()
+                        requestNormalizado.mailUsuario(),
+                        requestNormalizado.passwordUsuario(),
+                        requestNormalizado.rolSolicitado().getClave()
                 )
         );
 
         final Long usuarioSistemaId = jwtService.extraerSubjectId(response.token());
-        crearActorLocalSiCorresponde(request, usuarioSistemaId);
+        crearActorLocalSiCorresponde(requestNormalizado, usuarioSistemaId);
 
         return mapResponse(response);
     }
@@ -89,15 +94,20 @@ public class AuthServiceImpl implements AuthService {
         }
 
         final Long usuarioSistemaId = jwtService.extraerSubjectId(bearerToken);
-        final String mailUsuario = jwtService.extraerMail(bearerToken);
+        final String mailUsuario = normalizarMail(jwtService.extraerMail(bearerToken));
         final List<String> roles = jwtService.extraerRoles(bearerToken);
+        final AuthCompleteProfileRequest requestNormalizado = normalizarPerfil(request);
+
+        if (tieneRol(roles, PalaRol.ADMINISTRADOR)) {
+            completarAdministrador(usuarioSistemaId, mailUsuario, requestNormalizado);
+        }
 
         if (tieneRol(roles, PalaRol.RECLUTADOR)) {
-            completarReclutador(usuarioSistemaId, mailUsuario, request);
+            completarReclutador(usuarioSistemaId, mailUsuario, requestNormalizado);
         }
 
         if (tieneRol(roles, PalaRol.POSTULANTE)) {
-            completarPostulante(usuarioSistemaId, mailUsuario, request);
+            completarPostulante(usuarioSistemaId, mailUsuario, requestNormalizado);
         }
 
         return construirSesionActual(bearerToken, mailUsuario);
@@ -129,15 +139,49 @@ public class AuthServiceImpl implements AuthService {
                     .header("X-System-Key", systemKey)
                     .body(request)
                     .retrieve()
-                    .onStatus(HttpStatusCode::isError, (req, res) -> {
-                        throw new OperacionInvalidaException("No se pudo autenticar contra el subsistema de seguridad");
-                    })
                     .body(SecuritySubsystemLoginResponse.class);
+        } catch (RestClientResponseException ex) {
+            throw new OperacionInvalidaException(extraerMensajeSubsistema(ex));
         } catch (RestClientException ex) {
             throw new OperacionInvalidaException(
                     "No se pudo establecer comunicacion con el subsistema de seguridad"
             );
         }
+    }
+
+    private String extraerMensajeSubsistema(RestClientResponseException ex) {
+        final String responseBody = ex.getResponseBodyAsString();
+        if (responseBody == null || responseBody.isBlank()) {
+            return "No se pudo autenticar contra el subsistema de seguridad";
+        }
+
+        final String mensaje = extraerCampoJson(responseBody, "mensaje");
+        if (mensaje != null) {
+            return mensaje;
+        }
+
+        final String message = extraerCampoJson(responseBody, "message");
+        if (message != null) {
+            return message;
+        }
+
+        return responseBody;
+    }
+
+    private String extraerCampoJson(String responseBody, String campo) {
+        final String patron = "\"" + campo + "\":\"";
+        final int inicio = responseBody.indexOf(patron);
+        if (inicio < 0) {
+            return null;
+        }
+
+        final int desde = inicio + patron.length();
+        final int hasta = responseBody.indexOf('"', desde);
+        if (hasta < 0) {
+            return null;
+        }
+
+        return responseBody.substring(desde, hasta);
     }
 
     private AuthResponse mapResponse(SecuritySubsystemLoginResponse response) {
@@ -162,86 +206,50 @@ public class AuthServiceImpl implements AuthService {
     private void sincronizarActorLocalPostLogin(SecuritySubsystemLoginResponse response) {
         final Long usuarioSistemaId = jwtService.extraerSubjectId(response.token());
         final List<String> roles = response.roles() == null ? List.of() : response.roles();
+        final String mailUsuario = normalizarMail(response.mailUsuario());
 
         if (roles.stream().anyMatch(rol -> PalaRol.ADMINISTRADOR.getNombreVisible().equalsIgnoreCase(rol))) {
-            sincronizarAdministrador(response.mailUsuario(), usuarioSistemaId);
+            sincronizarAdministrador(mailUsuario, usuarioSistemaId);
         }
 
         if (roles.stream().anyMatch(rol -> PalaRol.RECLUTADOR.getNombreVisible().equalsIgnoreCase(rol))) {
-            sincronizarReclutador(response.mailUsuario(), usuarioSistemaId);
+            sincronizarReclutador(mailUsuario, usuarioSistemaId);
         }
 
         if (roles.stream().anyMatch(rol -> PalaRol.POSTULANTE.getNombreVisible().equalsIgnoreCase(rol))) {
-            sincronizarPostulante(response.mailUsuario(), usuarioSistemaId);
+            sincronizarPostulante(mailUsuario, usuarioSistemaId);
         }
     }
 
     private void sincronizarAdministrador(String mailUsuario, Long usuarioSistemaId) {
-        if (administradorRepository.findByUsuarioSeguridadId(usuarioSistemaId).isPresent()) {
-            return;
-        }
-
         final Administrador administradorExistente = administradorRepository
-                .findByMailAdministradorAndFechaBajaAdministradorIsNull(mailUsuario)
+                .findByMailAdministradorIgnoreCaseAndFechaBajaAdministradorIsNull(mailUsuario)
                 .orElse(null);
 
         if (administradorExistente != null) {
             administradorExistente.setUsuarioSeguridadId(usuarioSistemaId);
             administradorRepository.save(administradorExistente);
-            return;
         }
-
-        final String nombreBase = extraerNombreBase(mailUsuario);
-        final Administrador administrador = Administrador.builder()
-                .usuarioSeguridadId(usuarioSistemaId)
-                .nombreAdministrador(nombreBase)
-                .apellidoAdministrador("Administrador")
-                .mailAdministrador(mailUsuario)
-                .legajoAdministrador(usuarioSistemaId)
-                .fechaAltaAdministrador(Instant.now())
-                .build();
-
-        administradorRepository.save(administrador);
     }
 
     private void sincronizarReclutador(String mailUsuario, Long usuarioSistemaId) {
-        if (reclutadorRepository.findByUsuarioSeguridadId(usuarioSistemaId).isPresent()) {
-            return;
-        }
-
         final Reclutador reclutador = reclutadorRepository
-                .findByMailReclutadorAndFechaBajaReclutadorIsNull(mailUsuario)
+                .findByMailReclutadorIgnoreCaseAndFechaBajaReclutadorIsNull(mailUsuario)
                 .orElseThrow(() -> new OperacionInvalidaException(
                         "El usuario autenticado tiene rol de reclutador, pero no existe su perfil local en PALA. Debe registrarse con el formulario completo."
                 ));
-
-        if (reclutador.getUsuarioSeguridadId() != null && !reclutador.getUsuarioSeguridadId().equals(usuarioSistemaId)) {
-            throw new OperacionInvalidaException(
-                    "El reclutador local ya se encuentra vinculado a otro usuario de seguridad"
-            );
-        }
 
         reclutador.setUsuarioSeguridadId(usuarioSistemaId);
         reclutadorRepository.save(reclutador);
     }
 
     private void sincronizarPostulante(String mailUsuario, Long usuarioSistemaId) {
-        if (postulanteRepository.findByUsuarioSeguridadId(usuarioSistemaId).isPresent()) {
-            return;
-        }
-
         final Postulante postulante = postulanteRepository
-                .findByMailAcademicoPostulanteAndFechaBajaPostulanteIsNull(mailUsuario)
-                .or(() -> postulanteRepository.findByMailPersonalPostulanteAndFechaBajaPostulanteIsNull(mailUsuario))
+                .findByMailAcademicoPostulanteIgnoreCaseAndFechaBajaPostulanteIsNull(mailUsuario)
+                .or(() -> postulanteRepository.findByMailPersonalPostulanteIgnoreCaseAndFechaBajaPostulanteIsNull(mailUsuario))
                 .orElseThrow(() -> new OperacionInvalidaException(
                         "El usuario autenticado tiene rol de postulante, pero no existe su perfil local en PALA. Debe registrarse con el formulario completo."
                 ));
-
-        if (postulante.getUsuarioSeguridadId() != null && !postulante.getUsuarioSeguridadId().equals(usuarioSistemaId)) {
-            throw new OperacionInvalidaException(
-                    "El postulante local ya se encuentra vinculado a otro usuario de seguridad"
-            );
-        }
 
         postulante.setUsuarioSeguridadId(usuarioSistemaId);
         postulanteRepository.save(postulante);
@@ -311,7 +319,7 @@ public class AuthServiceImpl implements AuthService {
 
         final Reclutador reclutador = Reclutador.builder()
                 .usuarioSeguridadId(usuarioSistemaId)
-                .mailReclutador(request.mailUsuario())
+                .mailReclutador(normalizarMail(request.mailUsuario()))
                 .nombreReclutador(reclutadorRequest.nombreReclutador())
                 .cuilReclutador(reclutadorRequest.cuilReclutador())
                 .descripcionReclutador(reclutadorRequest.descripcionReclutador())
@@ -338,12 +346,8 @@ public class AuthServiceImpl implements AuthService {
                 .apellidoPostulante(postulanteRequest.apellidoPostulante())
                 .fechaNacimientoPostulante(postulanteRequest.fechaNacimientoPostulante())
                 .legajoAcademicoPostulante(postulanteRequest.legajoAcademicoPostulante())
-                .mailAcademicoPostulante(postulanteRequest.mailAcademicoPostulante())
-                .mailPersonalPostulante(
-                        postulanteRequest.mailPersonalPostulante() != null
-                                ? postulanteRequest.mailPersonalPostulante()
-                                : request.mailUsuario()
-                )
+                .mailAcademicoPostulante(null)
+                .mailPersonalPostulante(normalizarMail(request.mailUsuario()))
                 .tipoEstudiante(tipoEstudiante)
                 .build();
 
@@ -366,13 +370,49 @@ public class AuthServiceImpl implements AuthService {
         final AuthCompleteProfileRequest.ReclutadorProfileData reclutadorRequest = request.reclutador();
         final Reclutador reclutador = Reclutador.builder()
                 .usuarioSeguridadId(usuarioSistemaId)
-                .mailReclutador(mailUsuario)
+                .mailReclutador(normalizarMail(mailUsuario))
                 .nombreReclutador(reclutadorRequest.nombreReclutador())
                 .cuilReclutador(reclutadorRequest.cuilReclutador())
                 .descripcionReclutador(reclutadorRequest.descripcionReclutador())
                 .build();
 
         reclutadorRepository.save(reclutador);
+    }
+
+    private void completarAdministrador(
+            Long usuarioSistemaId,
+            String mailUsuario,
+            AuthCompleteProfileRequest request
+    ) {
+        if (administradorRepository.findByUsuarioSeguridadId(usuarioSistemaId).isPresent()) {
+            return;
+        }
+
+        final Administrador administradorExistente = administradorRepository
+                .findByMailAdministradorIgnoreCaseAndFechaBajaAdministradorIsNull(mailUsuario)
+                .orElse(null);
+
+        if (administradorExistente != null) {
+            administradorExistente.setUsuarioSeguridadId(usuarioSistemaId);
+            administradorRepository.save(administradorExistente);
+            return;
+        }
+
+        if (request.administrador() == null) {
+            throw new OperacionInvalidaException("Debe completar los datos del administrador");
+        }
+
+        final AuthCompleteProfileRequest.AdministradorProfileData administradorRequest = request.administrador();
+        final Administrador administrador = Administrador.builder()
+                .usuarioSeguridadId(usuarioSistemaId)
+                .nombreAdministrador(administradorRequest.nombreAdministrador())
+                .apellidoAdministrador(administradorRequest.apellidoAdministrador())
+                .mailAdministrador(normalizarMail(mailUsuario))
+                .legajoAdministrador(administradorRequest.legajoAdministrador())
+                .fechaAltaAdministrador(Instant.now())
+                .build();
+
+        administradorRepository.save(administrador);
     }
 
     private void completarPostulante(
@@ -401,11 +441,11 @@ public class AuthServiceImpl implements AuthService {
                 .apellidoPostulante(postulanteRequest.apellidoPostulante())
                 .fechaNacimientoPostulante(postulanteRequest.fechaNacimientoPostulante())
                 .legajoAcademicoPostulante(postulanteRequest.legajoAcademicoPostulante())
-                .mailAcademicoPostulante(postulanteRequest.mailAcademicoPostulante())
+                .mailAcademicoPostulante(normalizarMail(postulanteRequest.mailAcademicoPostulante()))
                 .mailPersonalPostulante(
                         postulanteRequest.mailPersonalPostulante() != null
-                                ? postulanteRequest.mailPersonalPostulante()
-                                : mailUsuario
+                                ? normalizarMail(postulanteRequest.mailPersonalPostulante())
+                                : normalizarMail(mailUsuario)
                 )
                 .tipoEstudiante(tipoEstudiante)
                 .build();
@@ -428,5 +468,55 @@ public class AuthServiceImpl implements AuthService {
 
     private boolean tieneRol(List<String> roles, PalaRol rol) {
         return roles.stream().anyMatch(nombre -> rol.getNombreVisible().equalsIgnoreCase(nombre));
+    }
+
+    private AuthRegisterRequest normalizarRegistro(AuthRegisterRequest request) {
+        if (request == null) {
+            return null;
+        }
+
+        final AuthRegisterRequest.PostulanteRegisterData postulante = request.postulante() == null
+                ? null
+                : new AuthRegisterRequest.PostulanteRegisterData(
+                        request.postulante().nombrePostulante(),
+                        request.postulante().apellidoPostulante(),
+                        request.postulante().fechaNacimientoPostulante(),
+                        request.postulante().legajoAcademicoPostulante(),
+                        request.postulante().tipoEstudianteId()
+                );
+
+        return new AuthRegisterRequest(
+                normalizarMail(request.mailUsuario()),
+                request.passwordUsuario(),
+                request.rolSolicitado(),
+                request.reclutador(),
+                postulante
+        );
+    }
+
+    private AuthCompleteProfileRequest normalizarPerfil(AuthCompleteProfileRequest request) {
+        if (request == null) {
+            return request;
+        }
+
+        return new AuthCompleteProfileRequest(
+                request.administrador(),
+                request.reclutador(),
+                request.postulante() == null
+                        ? null
+                        : new AuthCompleteProfileRequest.PostulanteProfileData(
+                                request.postulante().nombrePostulante(),
+                                request.postulante().apellidoPostulante(),
+                                request.postulante().fechaNacimientoPostulante(),
+                                request.postulante().legajoAcademicoPostulante(),
+                                normalizarMail(request.postulante().mailAcademicoPostulante()),
+                                normalizarMail(request.postulante().mailPersonalPostulante()),
+                                request.postulante().tipoEstudianteId()
+                        )
+        );
+    }
+
+    private String normalizarMail(String mail) {
+        return mail == null ? null : mail.trim().toLowerCase(Locale.ROOT);
     }
 }

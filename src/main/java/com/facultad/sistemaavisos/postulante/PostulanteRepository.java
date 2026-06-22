@@ -10,7 +10,7 @@ public interface PostulanteRepository extends JpaRepository<Postulante, Long> {
 
     Optional<Postulante> findByUsuarioSeguridadId(Long usuarioSeguridadId);
 
-    Optional<Postulante> findByMailAcademicoPostulanteAndFechaBajaPostulanteIsNull(String mailAcademicoPostulante);
+    Optional<Postulante> findByMailAcademicoPostulanteIgnoreCaseAndFechaBajaPostulanteIsNull(String mailAcademicoPostulante);
 
-    Optional<Postulante> findByMailPersonalPostulanteAndFechaBajaPostulanteIsNull(String mailPersonalPostulante);
+    Optional<Postulante> findByMailPersonalPostulanteIgnoreCaseAndFechaBajaPostulanteIsNull(String mailPersonalPostulante);
 }

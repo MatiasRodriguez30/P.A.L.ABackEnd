@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
-import java.time.Instant;
+import java.time.LocalDate;
 
 public record AuthRegisterRequest(
         @Email @NotBlank String mailUsuario,
@@ -26,10 +26,8 @@ public record AuthRegisterRequest(
     public record PostulanteRegisterData(
             @NotBlank String nombrePostulante,
             @NotBlank String apellidoPostulante,
-            Instant fechaNacimientoPostulante,
+            LocalDate fechaNacimientoPostulante,
             @NotNull @Positive Long legajoAcademicoPostulante,
-            @Email @NotBlank String mailAcademicoPostulante,
-            String mailPersonalPostulante,
             @NotNull @Positive Long tipoEstudianteId
     ) {
     }
