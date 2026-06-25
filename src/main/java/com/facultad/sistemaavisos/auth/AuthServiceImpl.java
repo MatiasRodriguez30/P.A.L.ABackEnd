@@ -3,11 +3,20 @@ package com.facultad.sistemaavisos.auth;
 import com.facultad.sistemaavisos.administrador.Administrador;
 import com.facultad.sistemaavisos.administrador.AdministradorRepository;
 import com.facultad.sistemaavisos.auth.dto.AuthCompleteProfileRequest;
+import com.facultad.sistemaavisos.auth.dto.AuthForgotPasswordRequest;
 import com.facultad.sistemaavisos.auth.dto.AuthLoginRequest;
+import com.facultad.sistemaavisos.auth.dto.AuthMessageResponse;
 import com.facultad.sistemaavisos.auth.dto.AuthRegisterRequest;
+import com.facultad.sistemaavisos.auth.dto.AuthRegisterStartResponse;
+import com.facultad.sistemaavisos.auth.dto.AuthResetPasswordRequest;
 import com.facultad.sistemaavisos.auth.dto.AuthResponse;
+import com.facultad.sistemaavisos.auth.dto.AuthVerifyRegistrationRequest;
+import com.facultad.sistemaavisos.auth.dto.SecuritySubsystemExternalRegisterResponse;
 import com.facultad.sistemaavisos.auth.dto.SecuritySubsystemExternalRegisterRequest;
+import com.facultad.sistemaavisos.auth.dto.SecuritySubsystemForgotPasswordRequest;
 import com.facultad.sistemaavisos.auth.dto.SecuritySubsystemLoginResponse;
+import com.facultad.sistemaavisos.auth.dto.SecuritySubsystemResetPasswordRequest;
+import com.facultad.sistemaavisos.auth.dto.SecuritySubsystemVerifyEmailRequest;
 import com.facultad.sistemaavisos.postulante.Postulante;
 import com.facultad.sistemaavisos.postulante.PostulanteRepository;
 import com.facultad.sistemaavisos.reclutador.Reclutador;
@@ -62,29 +71,87 @@ public class AuthServiceImpl implements AuthService {
                 normalizarMail(request.mailUsuario()),
                 request.passwordUsuario()
         );
-        final SecuritySubsystemLoginResponse response = invocarSubsistema("/api/auth/external/login", requestNormalizado);
+        final SecuritySubsystemLoginResponse response = invocarSubsistema(
+                "/api/auth/external/login",
+                requestNormalizado,
+                SecuritySubsystemLoginResponse.class
+        );
         sincronizarActorLocalPostLogin(response);
         return mapResponse(response);
     }
 
     @Override
-    public AuthResponse register(AuthRegisterRequest request) {
+    public AuthRegisterStartResponse register(AuthRegisterRequest request) {
         final AuthRegisterRequest requestNormalizado = normalizarRegistro(request);
         validarRegistro(requestNormalizado);
 
-        final SecuritySubsystemLoginResponse response = invocarSubsistema(
+        final SecuritySubsystemExternalRegisterResponse response = invocarSubsistema(
                 "/api/auth/external/register",
                 new SecuritySubsystemExternalRegisterRequest(
                         requestNormalizado.mailUsuario(),
                         requestNormalizado.passwordUsuario(),
                         requestNormalizado.rolSolicitado().getClave()
-                )
+                ),
+                SecuritySubsystemExternalRegisterResponse.class
+        );
+
+        return new AuthRegisterStartResponse(
+                response.usuarioId(),
+                response.mailUsuario(),
+                response.verificationRequired(),
+                response.message()
+        );
+    }
+
+    @Override
+    public AuthResponse verifyEmail(AuthVerifyRegistrationRequest request) {
+        final AuthRegisterRequest registroNormalizado = normalizarRegistro(request.registro());
+        validarRegistro(registroNormalizado);
+
+        final SecuritySubsystemLoginResponse response = invocarSubsistema(
+                "/api/auth/external/verify-email",
+                new SecuritySubsystemVerifyEmailRequest(
+                        normalizarMail(request.mailUsuario()),
+                        request.codigo()
+                ),
+                SecuritySubsystemLoginResponse.class
         );
 
         final Long usuarioSistemaId = jwtService.extraerSubjectId(response.token());
-        crearActorLocalSiCorresponde(requestNormalizado, usuarioSistemaId);
+        crearActorLocalSiCorresponde(registroNormalizado, usuarioSistemaId);
 
         return mapResponse(response);
+    }
+
+    @Override
+    public AuthMessageResponse resendVerification(AuthForgotPasswordRequest request) {
+        return invocarSubsistema(
+                "/api/auth/external/resend-verification",
+                new SecuritySubsystemForgotPasswordRequest(normalizarMail(request.mailUsuario())),
+                AuthMessageResponse.class
+        );
+    }
+
+    @Override
+    public AuthMessageResponse forgotPassword(AuthForgotPasswordRequest request) {
+        return invocarSubsistema(
+                "/api/auth/external/password/forgot",
+                new SecuritySubsystemForgotPasswordRequest(normalizarMail(request.mailUsuario())),
+                AuthMessageResponse.class
+        );
+    }
+
+    @Override
+    public AuthMessageResponse resetPassword(AuthResetPasswordRequest request) {
+        return invocarSubsistema(
+                "/api/auth/external/password/reset",
+                new SecuritySubsystemResetPasswordRequest(
+                        normalizarMail(request.mailUsuario()),
+                        request.codigo(),
+                        request.nuevaPassword()
+                ),
+                AuthMessageResponse.class
+        );
     }
 
     @Override
@@ -132,14 +199,14 @@ public class AuthServiceImpl implements AuthService {
         );
     }
 
-    private SecuritySubsystemLoginResponse invocarSubsistema(String path, Object request) {
+    private <T> T invocarSubsistema(String path, Object request, Class<T> responseType) {
         try {
             return restClient.post()
                     .uri(path)
                     .header("X-System-Key", systemKey)
                     .body(request)
                     .retrieve()
-                    .body(SecuritySubsystemLoginResponse.class);
+                    .body(responseType);
         } catch (RestClientResponseException ex) {
             throw new OperacionInvalidaException(extraerMensajeSubsistema(ex));
         } catch (RestClientException ex) {

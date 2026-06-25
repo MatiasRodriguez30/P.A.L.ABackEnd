@@ -2,8 +2,13 @@ package com.facultad.sistemaavisos.auth;
 
 import com.facultad.sistemaavisos.auth.dto.AuthLoginRequest;
 import com.facultad.sistemaavisos.auth.dto.AuthCompleteProfileRequest;
+import com.facultad.sistemaavisos.auth.dto.AuthForgotPasswordRequest;
+import com.facultad.sistemaavisos.auth.dto.AuthMessageResponse;
 import com.facultad.sistemaavisos.auth.dto.AuthRegisterRequest;
+import com.facultad.sistemaavisos.auth.dto.AuthRegisterStartResponse;
+import com.facultad.sistemaavisos.auth.dto.AuthResetPasswordRequest;
 import com.facultad.sistemaavisos.auth.dto.AuthResponse;
+import com.facultad.sistemaavisos.auth.dto.AuthVerifyRegistrationRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -30,8 +35,28 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody @Valid AuthRegisterRequest request) {
+    public ResponseEntity<AuthRegisterStartResponse> register(@RequestBody @Valid AuthRegisterRequest request) {
         return ResponseEntity.ok(authService.register(request));
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<AuthResponse> verifyEmail(@RequestBody @Valid AuthVerifyRegistrationRequest request) {
+        return ResponseEntity.ok(authService.verifyEmail(request));
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<AuthMessageResponse> resendVerification(@RequestBody @Valid AuthForgotPasswordRequest request) {
+        return ResponseEntity.ok(authService.resendVerification(request));
+    }
+
+    @PostMapping("/password/forgot")
+    public ResponseEntity<AuthMessageResponse> forgotPassword(@RequestBody @Valid AuthForgotPasswordRequest request) {
+        return ResponseEntity.ok(authService.forgotPassword(request));
+    }
+
+    @PostMapping("/password/reset")
+    public ResponseEntity<AuthMessageResponse> resetPassword(@RequestBody @Valid AuthResetPasswordRequest request) {
+        return ResponseEntity.ok(authService.resetPassword(request));
     }
 
     @PatchMapping("/perfil-inicial")
