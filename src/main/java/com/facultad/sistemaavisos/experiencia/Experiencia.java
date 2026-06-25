@@ -29,9 +29,6 @@ public class Experiencia {
     private Long id;
 
     @Column(name = "descripcion_experiencia")
-    private String nombreExperiencia;
-
-    @Column(name = "descripcion_experiencia")
     private String descripcionExperiencia;
 
     @Column(name = "fecha_baja_experiencia")
