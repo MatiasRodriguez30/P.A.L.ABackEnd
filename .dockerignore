@@ -1,0 +1,12 @@
+.git
+.github
+.idea
+.tools
+target
+tmp
+skills
+run-codex*.log
+README.md
+ARCHITECTURE_NOTES.md
+PENDIENTES.md
+PERMISOS_PALA.md

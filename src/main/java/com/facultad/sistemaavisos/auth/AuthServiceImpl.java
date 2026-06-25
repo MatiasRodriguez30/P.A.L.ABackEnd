@@ -302,9 +302,13 @@ public class AuthServiceImpl implements AuthService {
     private void sincronizarReclutador(String mailUsuario, Long usuarioSistemaId) {
         final Reclutador reclutador = reclutadorRepository
                 .findByMailReclutadorIgnoreCaseAndFechaBajaReclutadorIsNull(mailUsuario)
-                .orElseThrow(() -> new OperacionInvalidaException(
-                        "El usuario autenticado tiene rol de reclutador, pero no existe su perfil local en PALA. Debe registrarse con el formulario completo."
-                ));
+                .orElse(null);
+
+        // Si no existe perfil local, no lanzamos excepcion: el usuario debera
+        // completar su perfil en la pantalla de perfil-inicial del frontend.
+        if (reclutador == null) {
+            return;
+        }
 
         reclutador.setUsuarioSeguridadId(usuarioSistemaId);
         reclutadorRepository.save(reclutador);
@@ -314,9 +318,13 @@ public class AuthServiceImpl implements AuthService {
         final Postulante postulante = postulanteRepository
                 .findByMailAcademicoPostulanteIgnoreCaseAndFechaBajaPostulanteIsNull(mailUsuario)
                 .or(() -> postulanteRepository.findByMailPersonalPostulanteIgnoreCaseAndFechaBajaPostulanteIsNull(mailUsuario))
-                .orElseThrow(() -> new OperacionInvalidaException(
-                        "El usuario autenticado tiene rol de postulante, pero no existe su perfil local en PALA. Debe registrarse con el formulario completo."
-                ));
+                .orElse(null);
+
+        // Si no existe perfil local, no lanzamos excepcion: el usuario debera
+        // completar su perfil en la pantalla de perfil-inicial del frontend.
+        if (postulante == null) {
+            return;
+        }
 
         postulante.setUsuarioSeguridadId(usuarioSistemaId);
         postulanteRepository.save(postulante);
@@ -528,6 +536,16 @@ public class AuthServiceImpl implements AuthService {
         if (tieneRol(roles, PalaRol.ADMINISTRADOR) &&
                 administradorRepository.findByUsuarioSeguridadId(usuarioSistemaId).isEmpty()) {
             return PalaRol.ADMINISTRADOR.getClave();
+        }
+
+        if (tieneRol(roles, PalaRol.POSTULANTE) &&
+                postulanteRepository.findByUsuarioSeguridadId(usuarioSistemaId).isEmpty()) {
+            return PalaRol.POSTULANTE.getClave();
+        }
+
+        if (tieneRol(roles, PalaRol.RECLUTADOR) &&
+                reclutadorRepository.findByUsuarioSeguridadId(usuarioSistemaId).isEmpty()) {
+            return PalaRol.RECLUTADOR.getClave();
         }
 
         return null;
