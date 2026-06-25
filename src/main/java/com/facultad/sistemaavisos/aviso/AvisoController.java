@@ -29,4 +29,15 @@ public class AvisoController {
     public AvisoDetalleResponse obtenerDetalle(@PathVariable Long avisoId) {
         return avisoService.obtenerDetalleDisponible(avisoId);
     }
+
+    // Acceso publico (ver SecurityConfig): vidriera de avisos sin necesidad de login.
+    @GetMapping("/recomendados")
+    public List<AvisoResumenResponse> listarRecomendados() {
+        return avisoService.listarDisponibles();
+    }
+
+    @GetMapping("/recomendados/{avisoId}")
+    public AvisoDetalleResponse obtenerRecomendadoDetalle(@PathVariable Long avisoId) {
+        return avisoService.obtenerDetalleDisponible(avisoId);
+    }
 }

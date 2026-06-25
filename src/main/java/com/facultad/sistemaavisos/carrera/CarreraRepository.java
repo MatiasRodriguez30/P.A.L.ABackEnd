@@ -10,4 +10,6 @@ public interface CarreraRepository extends JpaRepository<Carrera, Long> {
     Optional<Carrera> findByIdAndFechaBajaCarreraIsNull(Long id);
 
     List<Carrera> findByFechaBajaCarreraIsNullOrderByNombreCarreraAsc();
+
+    Optional<Carrera> findByNombreCarrera(String nombreCarrera);
 }

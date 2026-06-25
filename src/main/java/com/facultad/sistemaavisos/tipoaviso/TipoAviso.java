@@ -1,6 +1,7 @@
 package com.facultad.sistemaavisos.tipoaviso;
 
 import com.facultad.sistemaavisos.subtipoaviso.SubTipoAviso;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -47,7 +48,7 @@ public class TipoAviso {
     private String nombreTipoAviso;
 
     @Builder.Default
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "cod_tipo_aviso", nullable = false)
     private List<SubTipoAviso> subTipoAvisos = new ArrayList<>();
 }

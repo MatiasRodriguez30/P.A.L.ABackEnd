@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 
 import java.time.Instant;
 import java.util.List;
@@ -26,6 +27,7 @@ public class CatalogoEstadosInitializer {
     private final TipoEstudianteRepository tipoEstudianteRepository;
 
     @Bean
+    @Order(1)
     ApplicationRunner seedEstados() {
         return args -> {
             seedEstadosAviso();

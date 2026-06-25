@@ -13,4 +13,7 @@ public interface TipoAvisoRepository extends JpaRepository<TipoAviso, Long> {
 
     @EntityGraph(attributePaths = "subTipoAvisos")
     List<TipoAviso> findByFechaBajaTipoAvisoIsNullOrderByNombreTipoAvisoAsc();
+
+    @EntityGraph(attributePaths = "subTipoAvisos")
+    Optional<TipoAviso> findByNombreTipoAviso(String nombreTipoAviso);
 }

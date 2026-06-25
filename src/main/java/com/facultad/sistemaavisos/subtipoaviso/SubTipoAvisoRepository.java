@@ -7,4 +7,6 @@ import java.util.Optional;
 public interface SubTipoAvisoRepository extends JpaRepository<SubTipoAviso, Long> {
 
     Optional<SubTipoAviso> findByIdAndFechaBajaSubTipoAvisoIsNull(Long id);
+
+    Optional<SubTipoAviso> findByNombreSubTipoAviso(String nombreSubTipoAviso);
 }
