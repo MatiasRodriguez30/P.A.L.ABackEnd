@@ -1,5 +1,6 @@
 package com.facultad.sistemaavisos.habilidad;
 
+import com.facultad.sistemaavisos.shared.exception.EntidadDadaDeBajaException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -33,4 +34,16 @@ public class Habilidad {
 
     @Column(name = "nombre_habilidad", nullable = false)
     private String nombreHabilidad;
+
+    public boolean estaDadoDeBaja() {
+        return fechaBajaHabilidad != null;
+    }
+
+    public void darDeBaja() {
+        if (estaDadoDeBaja()) {
+            throw new EntidadDadaDeBajaException("Habilidad", id);
+        }
+
+        this.fechaBajaHabilidad = Instant.now();
+    }
 }

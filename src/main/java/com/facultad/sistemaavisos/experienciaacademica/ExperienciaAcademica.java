@@ -1,5 +1,6 @@
 package com.facultad.sistemaavisos.experienciaacademica;
 
+import com.facultad.sistemaavisos.shared.exception.EntidadDadaDeBajaException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -13,6 +14,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "experiencias_academicas")
@@ -32,14 +34,26 @@ public class ExperienciaAcademica {
     private Instant fechaBajaExpAcademica;
 
     @Column(name = "fecha_desde_exp_academica")
-    private Instant fechaDesdeExpAcademica;
+    private LocalDate fechaDesdeExpAcademica;
 
     @Column(name = "fecha_hasta_exp_academica")
-    private Instant fechaHastaExpAcademica;
+    private LocalDate fechaHastaExpAcademica;
 
     @Column(name = "nombre_institucion_exp_academica", nullable = false)
     private String nombreInstitucionExpAcademica;
 
     @Column(name = "titulo_exp_academica", nullable = false)
     private String tituloExpAcademica;
+
+    public boolean estaDadoDeBaja() {
+        return fechaBajaExpAcademica != null;
+    }
+
+    public void darDeBaja() {
+        if (estaDadoDeBaja()) {
+            throw new EntidadDadaDeBajaException("ExperienciaAcademica", id);
+        }
+
+        this.fechaBajaExpAcademica = Instant.now();
+    }
 }

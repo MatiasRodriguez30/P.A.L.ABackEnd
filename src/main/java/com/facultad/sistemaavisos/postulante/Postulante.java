@@ -58,6 +58,14 @@ public class Postulante {
     @Column(name = "url_cv_guardado")
     private String urlCVGuardado;
 
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    @Column(name = "cv_archivo")
+    private byte[] cvArchivo;
+
+    @Column(name = "cv_nombre_archivo")
+    private String cvNombreArchivo;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cod_tipo_estudiante", nullable = false)
     private TipoEstudiante tipoEstudiante;

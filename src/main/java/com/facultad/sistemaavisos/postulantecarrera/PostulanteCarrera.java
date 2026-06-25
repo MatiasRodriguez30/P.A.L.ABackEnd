@@ -2,6 +2,7 @@ package com.facultad.sistemaavisos.postulantecarrera;
 
 import com.facultad.sistemaavisos.carrera.Carrera;
 import com.facultad.sistemaavisos.postulante.Postulante;
+import com.facultad.sistemaavisos.shared.exception.EntidadDadaDeBajaException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -18,6 +19,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "postulantes_carreras")
@@ -42,8 +44,23 @@ public class PostulanteCarrera {
     private Carrera carrera;
 
     @Column(name = "fecha_desde_postulante_carrera")
-    private Instant fechaDesdePostulanteCarrera;
+    private LocalDate fechaDesdePostulanteCarrera;
 
     @Column(name = "fecha_hasta_postulante_carrera")
-    private Instant fechaHastaPostulanteCarrera;
+    private LocalDate fechaHastaPostulanteCarrera;
+
+    @Column(name = "fecha_baja_postulante_carrera")
+    private Instant fechaBajaPostulanteCarrera;
+
+    public boolean estaDadoDeBaja() {
+        return fechaBajaPostulanteCarrera != null;
+    }
+
+    public void darDeBaja() {
+        if (estaDadoDeBaja()) {
+            throw new EntidadDadaDeBajaException("PostulanteCarrera", id);
+        }
+
+        this.fechaBajaPostulanteCarrera = Instant.now();
+    }
 }
