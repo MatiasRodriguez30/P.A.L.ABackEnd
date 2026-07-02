@@ -56,6 +56,13 @@ public class SolicitudAsociacion {
     @Column(name = "telefono_empresa_solicitud")
     private String telefonoEmpresaSolicitud;
 
+    @Column(name = "empresa_existente_al_solicitar")
+    @Builder.Default
+    private Boolean empresaExistenteAlSolicitar = false;
+
+    @Column(name = "observaciones_internas", length = 2000)
+    private String observacionesInternas;
+
     @Column(name = "fecha_baja_solicitud_asociacion")
     private Instant fechaBajaSolicitudAsociacion;
 
