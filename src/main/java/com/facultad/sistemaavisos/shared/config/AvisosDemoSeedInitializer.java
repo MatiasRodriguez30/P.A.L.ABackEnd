@@ -31,12 +31,41 @@ public class AvisosDemoSeedInitializer {
                             "No se encontro el estado de aviso ABIERTO; CatalogoEstadosInitializer deberia correr antes."
                     ));
 
+            final AvisoDemoSeederService.EmpresaSeed techDemo = new AvisoDemoSeederService.EmpresaSeed(
+                    "20-11111111-1",
+                    "contacto@techdemo.com",
+                    "TechDemo S.A.",
+                    "Empresa de desarrollo de software y servicios tecnológicos.",
+                    "Av. San Martín 1234, Mendoza",
+                    "2615550101"
+            );
+            final AvisoDemoSeederService.EmpresaSeed dataPala = new AvisoDemoSeederService.EmpresaSeed(
+                    "20-33333333-3",
+                    "rrhh@datapala.com",
+                    "DataPala Argentina",
+                    "Consultora enfocada en analítica de datos e inteligencia de negocios.",
+                    "Belgrano 456, Ciudad de Buenos Aires",
+                    "1144440202"
+            );
+            final AvisoDemoSeederService.EmpresaSeed soporteMendoza = new AvisoDemoSeederService.EmpresaSeed(
+                    "20-55555555-5",
+                    "contacto@soportemendoza.com",
+                    "Soporte Mendoza",
+                    "Mesa de ayuda y soporte técnico para usuarios corporativos.",
+                    "Las Heras 789, Mendoza",
+                    "2613076247"
+            );
+
+            avisoDemoSeederService.asegurarEmpresaDemo(techDemo);
+            avisoDemoSeederService.asegurarEmpresaDemo(dataPala);
+            avisoDemoSeederService.asegurarEmpresaDemo(soporteMendoza);
+
             avisoDemoSeederService.crearAvisoSiNoExiste(
                     "Desarrollador Full Stack Jr",
                     "Buscamos un desarrollador Full Stack junior con ganas de aprender React y Node.js. Trabajo en equipo con mentoria de devs senior.",
                     Duration.ofDays(45),
                     "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=400&fit=crop",
-                    new AvisoDemoSeederService.EmpresaSeed("20-11111111-1", "contacto@techdemo.com", "TechDemo S.A."),
+                    techDemo,
                     new AvisoDemoSeederService.ReclutadorSeed("27-22222222-2", "lucia.fernandez@techdemo.com", "Lucia Fernandez"),
                     List.of("Ingenieria en Sistemas de Informacion", "Tecnicatura Universitaria en Programacion"),
                     List.of(
@@ -51,7 +80,7 @@ public class AvisosDemoSeedInitializer {
                     "Oportunidad para analizar datos de uso de la plataforma PALA. Se valora conocimiento de SQL y Python.",
                     Duration.ofDays(60),
                     "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=400&fit=crop",
-                    new AvisoDemoSeederService.EmpresaSeed("20-33333333-3", "rrhh@datapala.com", "DataPala Argentina"),
+                    dataPala,
                     new AvisoDemoSeederService.ReclutadorSeed("20-44444444-4", "martin.gomez@datapala.com", "Martin Gomez"),
                     List.of("Ingenieria en Sistemas de Informacion"),
                     List.of(
@@ -66,7 +95,7 @@ public class AvisosDemoSeedInitializer {
                     "Atencion a usuarios internos, mantenimiento de equipos e instalacion de software. Ideal para dar los primeros pasos en IT.",
                     Duration.ofDays(30),
                     "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=800&h=400&fit=crop",
-                    new AvisoDemoSeederService.EmpresaSeed("20-55555555-5", "contacto@soportemendoza.com", "Soporte Mendoza"),
+                    soporteMendoza,
                     new AvisoDemoSeederService.ReclutadorSeed("27-66666666-6", "carla.diaz@soportemendoza.com", "Carla Diaz"),
                     List.of("Tecnicatura Universitaria en Programacion"),
                     List.of(

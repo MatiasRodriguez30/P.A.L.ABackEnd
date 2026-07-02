@@ -6,6 +6,8 @@ public interface EmpresaService {
 
     List<Empresa> listarTodas();
 
+    List<Empresa> listarActivas();
+
     Empresa buscarPorCuit(String cuitEmpresa);
 
     Empresa crear(Empresa empresa);

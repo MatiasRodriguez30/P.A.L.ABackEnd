@@ -3,6 +3,7 @@ package com.facultad.sistemaavisos.solicitudasociacion;
 import com.facultad.sistemaavisos.administrador.Administrador;
 import com.facultad.sistemaavisos.solicitudestado.SolicitudEstado;
 import com.facultad.sistemaavisos.estadosolicitud.EstadoSolicitud;
+import com.facultad.sistemaavisos.reclutador.Reclutador;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -65,6 +66,10 @@ public class SolicitudAsociacion {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "nro_administrador")
     private Administrador administrador;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "nro_reclutador", nullable = false)
+    private Reclutador reclutador;
 
     @Builder.Default
     @OneToMany(mappedBy = "solicitudAsociacion", fetch = FetchType.LAZY, cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true)

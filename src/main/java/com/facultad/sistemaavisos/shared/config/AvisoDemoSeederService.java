@@ -41,13 +41,18 @@ class AvisoDemoSeederService {
     private final SubTipoAvisoRepository subTipoAvisoRepository;
     private final EntityManager entityManager;
 
-    record EmpresaSeed(String cuit, String mail, String razonSocial) {
+    record EmpresaSeed(String cuit, String mail, String razonSocial, String descripcion, String direccion, String telefono) {
     }
 
     record ReclutadorSeed(String cuil, String mail, String nombre) {
     }
 
     record TipoAvisoSeed(String nombreTipoAviso, List<String> subTipos) {
+    }
+
+    @Transactional
+    void asegurarEmpresaDemo(EmpresaSeed empresaSeed) {
+        buscarOCrearEmpresa(empresaSeed);
     }
 
     @Transactional
@@ -120,14 +125,56 @@ class AvisoDemoSeederService {
     }
 
     private Empresa buscarOCrearEmpresa(EmpresaSeed seed) {
-        return empresaRepository.findByCuitEmpresa(seed.cuit()).orElseGet(() -> empresaRepository.save(
+        return empresaRepository.findByCuitEmpresaNormalizado(normalizarCuit(seed.cuit()))
+                .or(() -> empresaRepository.findByCuitEmpresa(seed.cuit()))
+                .map(empresa -> {
+            boolean modificada = false;
+
+            if (estaVacio(empresa.getMailEmpresa()) && !estaVacio(seed.mail())) {
+                empresa.setMailEmpresa(seed.mail());
+                modificada = true;
+            }
+            if (estaVacio(empresa.getRazonSocialEmpresa()) && !estaVacio(seed.razonSocial())) {
+                empresa.setRazonSocialEmpresa(seed.razonSocial());
+                modificada = true;
+            }
+            if (estaVacio(empresa.getDescripcionEmpresa()) && !estaVacio(seed.descripcion())) {
+                empresa.setDescripcionEmpresa(seed.descripcion());
+                modificada = true;
+            }
+            if (estaVacio(empresa.getDireccionEmpresa()) && !estaVacio(seed.direccion())) {
+                empresa.setDireccionEmpresa(seed.direccion());
+                modificada = true;
+            }
+            if (estaVacio(empresa.getTelefonoEmpresa()) && !estaVacio(seed.telefono())) {
+                empresa.setTelefonoEmpresa(seed.telefono());
+                modificada = true;
+            }
+            if (empresa.getFechaAltaEmpresa() == null) {
+                empresa.setFechaAltaEmpresa(Instant.now());
+                modificada = true;
+            }
+
+            return modificada ? empresaRepository.save(empresa) : empresa;
+                }).orElseGet(() -> empresaRepository.save(
                 Empresa.builder()
                         .cuitEmpresa(seed.cuit())
                         .mailEmpresa(seed.mail())
                         .razonSocialEmpresa(seed.razonSocial())
+                        .descripcionEmpresa(seed.descripcion())
+                        .direccionEmpresa(seed.direccion())
+                        .telefonoEmpresa(seed.telefono())
                         .fechaAltaEmpresa(Instant.now())
                         .build()
         ));
+    }
+
+    private boolean estaVacio(String valor) {
+        return valor == null || valor.isBlank();
+    }
+
+    private String normalizarCuit(String cuit) {
+        return cuit == null ? null : cuit.trim().replace("-", "").replace(" ", "");
     }
 
     private Reclutador buscarOCrearReclutador(ReclutadorSeed seed) {

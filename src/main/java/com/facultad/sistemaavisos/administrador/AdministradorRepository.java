@@ -9,4 +9,6 @@ public interface AdministradorRepository extends JpaRepository<Administrador, Lo
     Optional<Administrador> findByUsuarioSeguridadId(Long usuarioSeguridadId);
 
     Optional<Administrador> findByMailAdministradorIgnoreCaseAndFechaBajaAdministradorIsNull(String mailAdministrador);
+
+    Optional<Administrador> findFirstByFechaBajaAdministradorIsNullOrderByIdAsc();
 }

@@ -93,6 +93,8 @@ Dejar asentados los permisos funcionales de PALA para luego:
   - Permite crear o resolver relaciones entre empresas y reclutadores.
 - `GESTIONAR_SOLICITUD_ASOCIACION`
   - Permite gestionar solicitudes de asociacion de empresa.
+- `SOLICITAR_ASOCIACION_RECLUTADOR`
+  - Permite iniciar la solicitud de asociacion con una empresa desde el perfil de reclutador.
 
 ### Reportes
 
@@ -114,6 +116,7 @@ Dejar asentados los permisos funcionales de PALA para luego:
 - `PAUSAR_AVISO`
 - `REANUDAR_AVISO`
 - `CANCELAR_AVISO`
+- `SOLICITAR_ASOCIACION_RECLUTADOR` cuando el perfil todavia no tiene una asociacion aceptada
 
 ## Notas de implementacion
 
@@ -131,6 +134,7 @@ Dejar asentados los permisos funcionales de PALA para luego:
   - o permisos de administracion de catalogos segun el caso
 - `CONSULTAR_SOPORTE_AVISO` existe para evitar mezclar permisos de consulta auxiliar con permisos operativos sobre el aviso.
 - La idea es que el usuario pueda abrir el formulario y cargar sus opciones disponibles aunque todavia no tenga permisos para publicar o controlar estados.
+- `SOLICITAR_ASOCIACION_RECLUTADOR` es un permiso funcional transitorio: aparece mientras el reclutador todavia no tiene una asociacion aceptada y se usa para habilitar el CTA de asociacion.
 
 ## Recomendacion para el subsistema
 

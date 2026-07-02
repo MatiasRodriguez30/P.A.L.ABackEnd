@@ -19,6 +19,11 @@ public class EmpresaServiceImpl implements EmpresaService {
     }
 
     @Override
+    public List<Empresa> listarActivas() {
+        return empresaRepository.findByFechaBajaEmpresaIsNullOrderByRazonSocialEmpresaAsc();
+    }
+
+    @Override
     public Empresa buscarPorCuit(String cuitEmpresa) {
         return empresaRepository.findByCuitEmpresa(cuitEmpresa)
                 .orElseThrow(() -> new RecursoNoEncontradoException(

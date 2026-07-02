@@ -183,8 +183,8 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse construirSesionActual(String bearerToken, String mailUsuario) {
         final List<String> roles = bearerToken == null ? List.of() : jwtService.extraerRoles(bearerToken);
-        final List<String> permisos = bearerToken == null ? List.of() : jwtService.extraerPermisos(bearerToken);
         final Long usuarioSistemaId = bearerToken == null ? null : jwtService.extraerSubjectId(bearerToken);
+        final List<String> permisos = bearerToken == null ? List.of() : jwtService.extraerPermisos(bearerToken);
         final String perfilPendiente = bearerToken == null ? null : resolverPerfilPendiente(usuarioSistemaId, roles);
 
         return new AuthResponse(
@@ -257,16 +257,18 @@ public class AuthServiceImpl implements AuthService {
         }
 
         final Long usuarioSistemaId = jwtService.extraerSubjectId(response.token());
+        final List<String> roles = response.roles() == null ? List.of() : response.roles();
+        final List<String> permisos = response.permisos() == null ? List.of() : response.permisos();
 
         return new AuthResponse(
                 response.token(),
                 response.tipo(),
                 usuarioSistemaId,
                 response.mailUsuario(),
-                response.roles() == null ? List.of() : response.roles(),
-                response.permisos() == null ? List.of() : response.permisos(),
-                resolverPerfilPendiente(usuarioSistemaId, response.roles() == null ? List.of() : response.roles()) == null,
-                resolverPerfilPendiente(usuarioSistemaId, response.roles() == null ? List.of() : response.roles())
+                roles,
+                permisos,
+                resolverPerfilPendiente(usuarioSistemaId, roles) == null,
+                resolverPerfilPendiente(usuarioSistemaId, roles)
         );
     }
 
