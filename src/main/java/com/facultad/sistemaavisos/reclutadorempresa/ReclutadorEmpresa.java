@@ -41,7 +41,7 @@ public class ReclutadorEmpresa {
     @JoinColumn(name = "nro_empresa", nullable = false)
     private Empresa empresa;
 
-    @Column(name = "fecha_inicio_reclutador_empresa")
+    @Column(name = "fecha_inicio_reclutador_empresa", nullable = false)
     private Instant fechaInicioReclutadorEmpresa;
 
     @Column(name = "fecha_fin_reclutador_empresa")

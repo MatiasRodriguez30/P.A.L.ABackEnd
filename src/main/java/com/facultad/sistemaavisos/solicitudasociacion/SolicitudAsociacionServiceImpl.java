@@ -9,6 +9,8 @@ import com.facultad.sistemaavisos.estadosolicitud.EstadoSolicitud;
 import com.facultad.sistemaavisos.estadosolicitud.EstadoSolicitudRepository;
 import com.facultad.sistemaavisos.reclutador.Reclutador;
 import com.facultad.sistemaavisos.reclutador.ReclutadorRepository;
+import com.facultad.sistemaavisos.reclutadorempresa.ReclutadorEmpresa;
+import com.facultad.sistemaavisos.reclutadorempresa.ReclutadorEmpresaRepository;
 import com.facultad.sistemaavisos.security.JwtService;
 import com.facultad.sistemaavisos.shared.exception.OperacionInvalidaException;
 import com.facultad.sistemaavisos.solicitudasociacion.dto.SolicitudAsociacionCreateRequest;
@@ -35,6 +37,7 @@ public class SolicitudAsociacionServiceImpl implements SolicitudAsociacionServic
 
     private final SolicitudAsociacionRepository solicitudAsociacionRepository;
     private final ReclutadorRepository reclutadorRepository;
+    private final ReclutadorEmpresaRepository reclutadorEmpresaRepository;
     private final EmpresaRepository empresaRepository;
     private final AdministradorRepository administradorRepository;
     private final EstadoSolicitudRepository estadoSolicitudRepository;
@@ -147,7 +150,33 @@ public class SolicitudAsociacionServiceImpl implements SolicitudAsociacionServic
     @Override
     public SolicitudAsociacionDetalleResponse aceptar(
             Long id, String bearerToken, SolicitudAsociacionGestionRequest request) {
-        return resolver(id, bearerToken, request, "ACEPTADA");
+        final SolicitudAsociacion solicitud = buscarDetalle(id);
+        validarEstado(solicitud, "EN_EVALUACION", "Solo se puede aceptar una solicitud en evaluacion");
+
+        final Empresa empresa = empresaRepository
+                .findByCuitEmpresaNormalizadoForUpdate(normalizarCuit(solicitud.getCuitEmpresaSolicitud()))
+                .filter(item -> item.getFechaBajaEmpresa() == null)
+                .orElseThrow(() -> new OperacionInvalidaException(
+                        "Debe crear la empresa propuesta antes de aceptar la solicitud"));
+
+        if (reclutadorEmpresaRepository
+                .existsByReclutador_IdAndEmpresa_IdAndFechaFinReclutadorEmpresaIsNull(
+                        solicitud.getReclutador().getId(), empresa.getId())) {
+            throw new OperacionInvalidaException(
+                    "El reclutador ya tiene una conexion vigente con esta empresa");
+        }
+
+        final SolicitudAsociacionDetalleResponse respuesta = resolver(
+                id, bearerToken, request, "ACEPTADA");
+
+        reclutadorEmpresaRepository.save(ReclutadorEmpresa.builder()
+                .reclutador(solicitud.getReclutador())
+                .empresa(empresa)
+                .fechaInicioReclutadorEmpresa(respuesta.fechaResolucion())
+                .fechaFinReclutadorEmpresa(null)
+                .build());
+
+        return respuesta;
     }
 
     @Override
@@ -230,6 +259,10 @@ public class SolicitudAsociacionServiceImpl implements SolicitudAsociacionServic
             SolicitudAsociacion solicitud, List<SolicitudEstadoHistorialResponse> historial) {
         final Reclutador reclutador = solicitud.getReclutador();
         final Administrador admin = solicitud.getAdministrador();
+        final boolean empresaRegistrada = empresaRepository
+                .findByCuitEmpresaNormalizado(normalizarCuit(solicitud.getCuitEmpresaSolicitud()))
+                .filter(empresa -> empresa.getFechaBajaEmpresa() == null)
+                .isPresent();
         return new SolicitudAsociacionDetalleResponse(
                 solicitud.getId(), solicitud.getFechaEnvioSolicitud(), solicitud.getFechaResolucion(),
                 solicitud.getEstadoActual().getCodigoInterno(),
@@ -240,7 +273,7 @@ public class SolicitudAsociacionServiceImpl implements SolicitudAsociacionServic
                 new SolicitudAsociacionDetalleResponse.EmpresaDetalle(
                         solicitud.getRazonSocialEmpresaSolicitud(), solicitud.getCuitEmpresaSolicitud(),
                         solicitud.getMailEmpresaSolicitud(), solicitud.getTelefonoEmpresaSolicitud(),
-                        Boolean.TRUE.equals(solicitud.getEmpresaExistenteAlSolicitar())),
+                        empresaRegistrada),
                 solicitud.getObservacionesInternas(),
                 admin == null || solicitud.getFechaResolucion() == null ? null : new SolicitudAsociacionDetalleResponse.AdministradorDetalle(
                         admin.getId(), admin.getNombreAdministrador(), admin.getApellidoAdministrador(),

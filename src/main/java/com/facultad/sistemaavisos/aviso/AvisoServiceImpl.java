@@ -294,7 +294,7 @@ public class AvisoServiceImpl implements AvisoService {
     }
 
     private Empresa buscarEmpresaActivaDelReclutador(Long reclutadorId, Long empresaId) {
-        reclutadorEmpresaRepository.findByReclutador_IdAndEmpresa_IdAndFechaFinReclutadorEmpresaIsNull(
+        reclutadorEmpresaRepository.findByReclutador_IdAndEmpresa_IdAndFechaFinReclutadorEmpresaIsNullAndEmpresa_FechaBajaEmpresaIsNull(
                         reclutadorId,
                         empresaId
                 )

@@ -16,5 +16,20 @@ public interface ReclutadorEmpresaRepository extends JpaRepository<ReclutadorEmp
     @EntityGraph(attributePaths = "empresa")
     List<ReclutadorEmpresa> findByReclutador_IdAndFechaFinReclutadorEmpresaIsNull(Long reclutadorId);
 
+    @EntityGraph(attributePaths = "empresa")
+    List<ReclutadorEmpresa> findByReclutador_IdAndFechaFinReclutadorEmpresaIsNullAndEmpresa_FechaBajaEmpresaIsNull(
+            Long reclutadorId
+    );
+
+    Optional<ReclutadorEmpresa> findByReclutador_IdAndEmpresa_IdAndFechaFinReclutadorEmpresaIsNullAndEmpresa_FechaBajaEmpresaIsNull(
+            Long reclutadorId,
+            Long empresaId
+    );
+
     boolean existsByReclutador_IdAndFechaFinReclutadorEmpresaIsNull(Long reclutadorId);
+
+    boolean existsByReclutador_IdAndEmpresa_IdAndFechaFinReclutadorEmpresaIsNull(
+            Long reclutadorId,
+            Long empresaId
+    );
 }

@@ -37,7 +37,7 @@ public class AvisoSoporteServiceImpl implements AvisoSoporteService {
     public List<AvisoFormularioSoporteResponse.EmpresaActivaResponse> listarEmpresasActivasDelReclutador(Long reclutadorId) {
         validarReclutadorActivo(reclutadorId);
 
-        return List.copyOf(reclutadorEmpresaRepository.findByReclutador_IdAndFechaFinReclutadorEmpresaIsNull(reclutadorId).stream()
+        return List.copyOf(reclutadorEmpresaRepository.findByReclutador_IdAndFechaFinReclutadorEmpresaIsNullAndEmpresa_FechaBajaEmpresaIsNull(reclutadorId).stream()
                 .map(reclutadorEmpresa -> reclutadorEmpresa.getEmpresa())
                 .filter(empresa -> empresa != null && empresa.getFechaBajaEmpresa() == null)
                 .sorted(Comparator.comparing(empresa -> empresa.getRazonSocialEmpresa(), String.CASE_INSENSITIVE_ORDER))
